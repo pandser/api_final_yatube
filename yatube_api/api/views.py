@@ -1,10 +1,11 @@
 from django.shortcuts import get_object_or_404
+from rest_framework import mixins
 from rest_framework import serializers
 from rest_framework.filters import SearchFilter
-from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+from rest_framework.viewsets import (ModelViewSet,
+                                     ReadOnlyModelViewSet, GenericViewSet)
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
-
 
 from posts.models import Group, Post, Comment, Follow, User
 from .serializers import (PostSerializer, CommentSerializer,
@@ -43,7 +44,8 @@ class CommentViewSet(ModelViewSet):
         )
 
 
-class FollowViewSet(ModelViewSet):
+class FollowViewSet(mixins.CreateModelMixin,
+                    mixins.ListModelMixin, GenericViewSet):
     queryset = Follow.objects.all()
     serializer_class = FollowSerializer
     filter_backends = (SearchFilter,)
@@ -61,5 +63,4 @@ class FollowViewSet(ModelViewSet):
         if (Follow.objects.filter(user=user, following=following)
                 or user == following):
             raise serializers.ValidationError()
-        else:
-            serializer.save(user=self.request.user)
+        serializer.save(user=self.request.user)
