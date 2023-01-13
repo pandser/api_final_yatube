@@ -59,8 +59,7 @@ class FollowViewSet(mixins.CreateModelMixin,
             User,
             username=self.request.data.get('following'),
         )
-        user = self.request.user
-        if (Follow.objects.filter(user=user, following=following)
-                or user == following):
+        if (Follow.objects.filter(user=self.request.user, following=following)
+                or self.request.user == following):
             raise serializers.ValidationError()
         serializer.save(user=self.request.user)
